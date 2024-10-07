@@ -35,7 +35,7 @@ def menu_principal():
     while bandera:
         print("\tBienvenido a la cosita de eventos")
         print("\nQué acción desea hacer ahora?")
-        print("\t1.- OPCIONES DE SALON")
+        print("\t1.- OPCIONES DE EVENTO")
         print("\t2.- OPCIONES DE ASISTENTE")
         print("\t3.- VALIDAR TICKET")
         print("\tIngrese Q para salir.\n")
