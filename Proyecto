@@ -1,0 +1,65 @@
+import sqlite3
+import time
+
+class ConexionSQLite3:
+    def __init__(self, nombre_base_datos):
+        self.nombre_base_datos = nombre_base_datos
+        self.conexion = sqlite3.connect(nombre_base_datos)
+        self.cursor = self.conexion.cursor()
+    
+    def ejecutar(self, consulta, parametros=()):
+        self.cursor.execute(consulta, parametros)
+        self.conexion.commit()
+        print(f"Consulta ejecutada: {consulta}")
+    
+    def ejecutar(self, consulta, parametros=()):
+        self.cursor.execute(consulta, parametros)
+        self.conexion.commit()
+        print(f"Consulta ejecutada: {consulta}")
+
+    def leer(self, consulta):
+        self.cursor.execute(consulta)
+        resultados = self.cursor.fetchall()
+        for fila in resultados:
+            print(fila)
+
+    def cerrar(self):
+        self.conexion.close()
+        print("Conexión a SQLite cerrada.")
+
+conexion_sqlite = ConexionSQLite3("DB_Eventos.sqlite3")
+
+def menu_principal():
+    bandera = True
+
+    while bandera:
+        print("\tBienvenido a la cosita de eventos")
+        print("\nQué acción desea hacer ahora?")
+        print("\t1.- Cosa 1")
+        print("\t2.- Cosa 2")
+        print("\t3.- Cosa 3")
+        print("\tIngrese Q para salir.\n")
+
+        try:
+            eleccion_usuario = input("> ")
+        except ValueError:
+           print("\nIngrese un opción correcta.")
+
+        if eleccion_usuario == "1":
+            print("coso 1\n")
+        elif eleccion_usuario == "2":
+            print("coso 2\n")
+        elif eleccion_usuario == "3":
+            print("coso 3\n")
+        elif eleccion_usuario == "q" or eleccion_usuario == "Q":
+            print("salir\n")
+            time.sleep(1)
+            print("Saliendo del programa\n")
+            bandera = False
+        else:
+            print("El valor ingresado es incorrecto")
+            print("Volviendo al menu principal\n")
+            time.sleep(1)
+
+if __name__ == "__main__":
+    menu_principal()
