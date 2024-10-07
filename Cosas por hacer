@@ -1,0 +1,14 @@
+Metodos a realizar:
+Asiento:
+  Cambiar estado del asiento
+Asistente
+  Agregar asistente
+  Obtener asistente
+  Quitar asistentes
+  Generar ticket
+Salon
+  Reservar asiento
+  Mostrar asientos disponbles
+  Mostrar asientos reservados
+Ticked
+  Validar ticked
