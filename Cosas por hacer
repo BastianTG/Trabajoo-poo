@@ -1,14 +1,12 @@
 Metodos a realizar:
-Asiento:
-  Cambiar estado del asiento
+
+Eventos:
+  Agregar evento
+  Eliminar evento
 Asistente
-  Agregar asistente
+  Agregar asistente (Se tiene que generar un ticket automaticamente asociado al asistente, y se tiene que cambiar el estado del asiento asociado)
   Obtener asistente
-  Quitar asistentes
-  Generar ticket
-Salon
-  Reservar asiento
-  Mostrar asientos disponbles
-  Mostrar asientos reservados
+  Quitar asistentes (Se tiene que eliminar el ticket asociado al asistente, y se tiene que cambiar el estado del asiento asociado)
+
 Ticked
   Validar ticked
