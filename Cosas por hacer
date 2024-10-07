@@ -2,6 +2,10 @@ Metodos a realizar:
 
 Eventos:
   Agregar evento
+    Seleccionar salon
+      Seleccionar fecha (Ingresa una fecha DD/MM/AA)
+        Seleccionar hora (Se elige entre 3 rangos de horas predefinidas, se elimina de las opciones posibles la hora elegida, si no hay ninguna opcion 
+                          mostrar un mensaje en pantalla)
   Eliminar evento
 
 Asistente
