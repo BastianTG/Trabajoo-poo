@@ -83,8 +83,9 @@ CREATE TABLE IF NOT EXISTS asistentes (
 CREATE TABLE IF NOT EXISTS eventos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT NOT NULL,
-    fecha TEXT NOT NULL,  -- Puede ser del formato 'YYYY-MM-DD'
-    hora TEXT NOT NULL,   -- Puede ser del formato 'HH:MM'
+    fecha DATE NOT NULL,       -- Fecha en formato 'YYYY-MM-DD'
+    hora_inicio TIME NOT NULL, -- Hora de inicio en formato 'HH:MM:SS'
+    hora_termino TIME NOT NULL,-- Hora de t�rmino en formato 'HH:MM:SS'
     salon_id INTEGER,
     FOREIGN KEY (salon_id) REFERENCES salones (id) ON DELETE CASCADE
 );
@@ -106,7 +107,7 @@ CREATE TABLE IF NOT EXISTS tickets (
     asiento_id INTEGER,
     asistente_id INTEGER,
     FOREIGN KEY (evento_id) REFERENCES eventos (id) ON DELETE CASCADE,
-    FOREIGN KEY (asiento_id) REFERENCES asientos (id) ON DELETE CASCADE,
+    FOREIGN KEY (asiento_id) REFERENCES asientos (id) ON DELETE CASCADE
 );
 
 COMMIT TRANSACTION;
