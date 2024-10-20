@@ -23,6 +23,10 @@ class ConexionGestionEvento:
         resultados = self.cursor.fetchall()
         for fila in resultados:
             print(fila)
+            
+    # Función para obtener el ultimo id.    
+    def obtener_ultimo_id(self):
+        return self.cursor.lastrowid
     
     # Función para actualizar datos.
     def actualizar(self, consulta, parametros=()):
