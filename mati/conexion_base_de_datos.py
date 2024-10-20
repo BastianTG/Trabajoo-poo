@@ -2,44 +2,41 @@ import sqlite3
 
 # Clase que hace la conexion a la base de datos con las operaciones crud.
 class ConexionGestionEvento:
-    def __init__(self, nombre_base_de_datos="Base de datos.db"):
+    def __init__(self, nombre_bd):
         # Conexion a la base de datos, si no existe la crea
-        self.nombre_base_de_datos = nombre_base_de_datos
-        self.conexion = sqlite3.connect(nombre_base_de_datos)
-        self.cursor = self.conexion.cursor()
+        self.nombre_bd = nombre_bd
     
-    # Función para crear las tablas necesarias.
+    # Método para conectar con la base de datos
+    def conectar(self):
+        return sqlite3.connect(self.nombre_bd)
+    
+    # Método para verificar si la tabla existe
+    def existe_tabla(self,nombre_tabla):
+        conexion = self.conectar()
+        cursor = conexion.cursor()
+        cursor.execute('''
+        SELECT name FROM sqlite_master WHERE type='table' AND name=?
+        ''', (nombre_tabla,))
+        if cursor.fetchone():
+            return True
+        return False
+    
+    # Método abstracto para crear las tablas necesarias.
     def crear_tabla(self):
         pass
 
-    # Función para insertar datos.    
-    def insertar(self, consulta, parametros=()):
-        self.cursor.execute(consulta, parametros)
-        self.conexion.commit()
+    # Método abstracto para insertar datos.    
+    def insertar(self):
+        pass
 
-    # Función para leer datos.    
-    def leer(self, consulta):
-        self.cursor.execute(consulta)
-        resultados = self.cursor.fetchall()
-        for fila in resultados:
-            print(fila)
-            
-    # Función para obtener el ultimo id.    
-    def obtener_ultimo_id(self):
-        return self.cursor.lastrowid
+    # Método abstracto para leer datos.    
+    def leer(self):
+        pass
     
-    # Función para actualizar datos.
-    def actualizar(self, consulta, parametros=()):
-        self.cursor.execute(consulta, parametros)
-        self.conexion.commit()
+    # Método abstracto actualizar datos.
+    def actualizar(self):
+        pass
     
-    # Función para eliminar datos.
-    def eliminar(self, consulta, parametros=()):
-        self.cursor.execute(consulta, parametros)
-        self.conexion.commit()
-    
-    # Función para cerrar la conexión con la base de datos.
-    def cerrar_conexion(self):
-        self.conexion.close()
-        print("Conexion cerrada.")
-
+    # Método abstracto para eliminar datos.
+    def eliminar(self):
+        pass
