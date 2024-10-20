@@ -20,7 +20,10 @@ class ConexionGestionEvento:
         if cursor.fetchone():
             return True
         return False
-    
+    # Función para obtener el ultimo id.    
+    def obtener_ultimo_id(self):
+        return self.cursor.lastrowid
+        
     # Método abstracto para crear las tablas necesarias.
     def crear_tabla(self):
         pass
