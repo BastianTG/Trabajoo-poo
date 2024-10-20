@@ -1,0 +1,65 @@
+import sqlite3
+import time
+from gestion_evento import *
+from gestion_de_asistente import *
+
+
+class ConexionSQLite3:                      #Clase con la que conectar la aplicacion a una base de datos sqlite3
+    def __init__(self, nombre_base_datos):
+        self.nombre_base_datos = nombre_base_datos
+        self.conexion = sqlite3.connect(nombre_base_datos)
+        self.cursor = self.conexion.cursor()
+    
+    def ejecutar(self, consulta, parametros=()):
+        self.cursor.execute(consulta, parametros)
+        self.conexion.commit()
+        print(f"Consulta ejecutada: {consulta}")
+
+    def leer(self, consulta):
+        self.cursor.execute(consulta)
+        resultados = self.cursor.fetchall()
+        for fila in resultados:
+            print(fila)
+
+    def cerrar(self):
+        self.conexion.close()
+        print("Conexión a SQLite cerrada.")
+
+
+conexion_sqlite = ConexionSQLite3("Base de datos")         #Conexion a la base de del centro de eventos
+
+def menu_principal():                                    # Funcion que lleva al menu prinipal
+    bandera = True
+
+    while bandera:                                      #Texto que se muestra al principio del programa
+        print("\tBienvenido a la cosita de eventos")
+        print("\nQué acción desea hacer ahora?")
+        print("\t1.- OPCIONES DE EVENTO")
+        print("\t2.- OPCIONES DE ASISTENTE")
+        print("\t3.- VALIDAR TICKET")
+        print("\tIngrese Q para salir.\n")
+
+        eleccion_usuario = input("> ")                   #Varible que guarda la opcion ingresada por el usuario
+
+        if eleccion_usuario == "1":                      #Confirmacion de que los valores ingresados son validos
+            
+            
+            print("coso 1\n")
+        elif eleccion_usuario == "2":
+            menu_asistente()
+        elif eleccion_usuario == "3":
+            print("coso 3\n")
+        elif eleccion_usuario == "q" or eleccion_usuario == "Q":
+            print("salir\n")
+            time.sleep(1)
+            print("Saliendo del programa\n")
+            bandera = False
+        else:                                              #Mensaje en caso de que no ingrese un valor valido y se vuelve al menu principal 
+            print("El valor ingresado es incorrecto")
+            print("Volviendo al menu principal\n")
+            time.sleep(1)
+    
+    
+                
+if __name__ == "__main__":
+    menu_principal()
