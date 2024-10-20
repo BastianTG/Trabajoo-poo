@@ -107,6 +107,6 @@ def agregar_evento():
 if __name__ == "__main__":
     evento = Evento("Base de datos.db")
     evento.crear_tabla()
-    menu_evento()
     evento.cerrar_conexion()
+
 
