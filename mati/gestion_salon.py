@@ -1,25 +1,30 @@
 from conexion_base_de_datos import ConexionGestionEvento
 
-
-# Clase que gestiona los salones iniciales.
+# Clase que carga los salones pre-existentes a la base de datos.
 class Salon(ConexionGestionEvento):
-    def __init__(self, nombre_base_de_datos, salon_id=None, nombre=None, capacidad=None):
-        super().__init__(nombre_base_de_datos)
+    def __init__(self, nombre_bd, salon_id, nombre, capacidad):
+        super().__init__(nombre_bd)
         self.salon_id = salon_id
         self.nombre = nombre
         self.capacidad = capacidad
 
-    # Función para verificar si la tabla existe
+    # Método para verificar si la tabla existe
     def existe_tabla(self,nombre_tabla):
-        self.cursor.execute('''
+        # Conexión a la base de datos.
+        conexion = self.conectar()
+        cursor = conexion.cursor()
+        cursor.execute('''
         SELECT name FROM sqlite_master WHERE type='table' AND name=?
         ''', (nombre_tabla,))
-        if self.cursor.fetchone():
+        if cursor.fetchone():
             return True
         return False
 
+    # Método heredado que crea la tabla salones.
     def crear_tabla(self):
-            self.cursor.execute('''
+        conexion = self.conectar()
+        cursor = conexion.cursor()
+        cursor.execute('''
             -- Tabla de salones
             CREATE TABLE IF NOT EXISTS salones (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,30 +32,53 @@ class Salon(ConexionGestionEvento):
                 capacidad INTEGER NOT NULL
             );
                             ''')
-            self.conexion.commit()
-            print("Tabla 'salones' creada con exito.")
+        conexion.commit()
+        conexion.close()
+        print("Tabla 'salones' creada con exito.")
+    
+    # Método heredado que inserta datos a la base de datos.
+    def insertar(self):
+        conexion = self.conectar()
+        cursor = conexion.cursor()
+        # Inserción de los datos por defecto.
+        cursor.execute("""
+            INSERT INTO salones (id, nombre, capacidad)
+            VALUES (?,?,?) """, (self.salon_id, self.nombre, self.capacidad))
+        conexion.commit()
+        conexion.close()
+
+    # Método heredado para leer todos los salones de la base de datos.
+    def leer(self):
+        conexion = self.conectar()
+        cursor = conexion.cursor()
+        cursor.execute("SELECT * FROM salones")
+        salones = cursor.fetchall()
+        conexion.close()
+        return salones
+    
+def creacion_salones(salon_1, salon_2, salon_3):
+    # Creación de la tabla salones.
+    if not salon_1.existe_tabla('salones'):
+        salon_1.crear_tabla()
+
+        # Creación de los salones por defecto.
+        salon_1.insertar()
+        salon_2.insertar()
+        salon_3.insertar()
+        print("Salones cargados con exito.")
+
+    else:
+        print("La tabla 'salones' ya esta creada")
+
+# Variable que indica el nombre de la base de datos.
+nombre_bd = "eventos.db"
 
 # Creación del objeto Salon para crear tabla e insertar valores por defecto.
-salones = Salon("eventos.db")
+salon_1 = Salon(nombre_bd, 1, "Salon Principal", 25)
+salon_2 = Salon(nombre_bd, 2, "Teatro", 16)
+salon_3 = Salon(nombre_bd, 3, "Comedor", 16)
 
-# Creación de la tabla salones.
-if not salones.existe_tabla('salones'):
-    salones.crear_tabla()
-
-    # Creación de los salones por defecto.
-    salones.insertar("INSERT INTO salones (id, nombre, capacidad) VALUES (?, ?, ?)",
-                 (1, "Salon Principal", 25))
-    salones.insertar("INSERT INTO salones (id, nombre, capacidad) VALUES (?, ?, ?)",
-                 (2, "Teatro", 16))
-    salones.insertar("INSERT INTO salones (id, nombre, capacidad) VALUES (?, ?, ?)",
-                 (3, "Comedor", 16))
-    print("Salones insertados con exito.")
-
-    # Cerrar la conexión despues de los cambios realizados.
-    salones.cerrar_conexion()
-else:
-    print("La tabla 'salones' ya esta creada")
-
+creacion_salones(salon_1, salon_2, salon_3)
 
 
 
