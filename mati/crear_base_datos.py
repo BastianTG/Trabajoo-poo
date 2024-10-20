@@ -42,9 +42,9 @@ def crear_base_datos():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             numero_asiento INTEGER NOT NULL,
             salon_id INTEGER NOT NULL,
-            evento_id INTEGER NOT NULL,
+            evento_id INTEGER,
             ocupado INTEGER DEFAULT 0, -- 0: Libre, 1: Ocupado
-            FOREIGN KEY (salon_id) REFERENCES salones(id) ON DELETE CASCADE
+            FOREIGN KEY (salon_id) REFERENCES salones(id) ON DELETE CASCADE,
             FOREIGN KEY (evento_id) REFERENCES eventos(id)
         );
 
@@ -67,16 +67,10 @@ def crear_base_datos():
         INSERT INTO salones (id, nombre, capacidad) VALUES (3, 'Comedor', 16);
     ''')
 
-    
-    cursor.executemany('''
-        INSERT INTO asientos (id, numero_asiento, ocupado, salon_id)
-        VALUES (?, ?, ?, ?);
-    ''', asientos)
-
     # Confirmar los cambios y cerrar la conexión
     conexion.commit()
     conexion.close()
-    print("Base de datos y asientos creados con éxito.")
+    print("Base de datos creada con éxito.")
 
 if __name__ == "__main__":
     crear_base_datos()
