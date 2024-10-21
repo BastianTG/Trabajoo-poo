@@ -120,7 +120,7 @@ def menu_asistente():
 
     while True:
         print("\n--- Menú de Gestión de Asistente---")
-        print("1. Seleccionar evento")
+        print("1. Mostrar eventos")
         print("2. Agregar asistente")
         print("3. Mostrar asientos disponibles")
         print("4. Salir")
