@@ -79,7 +79,7 @@ class Asistente(ConexionGestionEvento):
         resultado = self.conexion.leer("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (nombre_tabla,))
         return len(resultado) > 0
 
-    def crear_tabla_asistentes(self):
+    def crear_tabla_asistentes(self): #aqui se crea la tabla asistente la cual tiene un id como llave primaria, un nombre y  evento_id, asiento_id como llaves foraneas
         self.conexion.ejecutar('''
         CREATE TABLE IF NOT EXISTS asistentes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -96,13 +96,13 @@ class Asiento:
     def __init__(self, conexion):
         self.conexion = conexion
 
-    def mostrar_asientos_disponibles(self):
+    def mostrar_asientos_disponibles(self): #busca en la base de datos los asiento desocupado (los que tengan un 0)
         asientos = self.conexion.leer("SELECT numero_asiento FROM asientos WHERE ocupado = 0")
         print("Asientos disponibles:")
         for asiento in asientos:
             print(f"Asiento número: {asiento[0]}")
         return asientos
-# Crear la tabla de asistentes si no existe
+# Crear la tabla de asistentes si no existe el cual llama a la funcion de crear tabla 
     conexion = ConexionSQLite3('eventos.db')
     asistente = Asistente("eventos.db",conexion)
     if not asistente.existe_tabla('asistentes'):
@@ -112,13 +112,13 @@ class Asiento:
 
 # Menú principal para interactuar con las clases
 def menu_asistente():
-    conexion = ConexionSQLite3('eventos.db')
+    conexion = ConexionSQLite3('eventos.db')  #aca crea la variable conexion para conectarse a la base de datos llamada eventos.db
     evento = Evento(conexion)
     asistente = Asistente("eventos.db",conexion)
     asiento = Asiento(conexion)
 
 
-    while True:
+    while True: #menu para gestionar las opciones de asistente  
         print("\n--- Menú de Gestión de Asistente---")
         print("1. Seleccionar evento")
         print("2. Agregar asistente")
@@ -128,14 +128,14 @@ def menu_asistente():
         opcion = input("Seleccione una opción: ")
 
         if opcion == "1":
-            evento.seleccionar_eventos()
+            evento.seleccionar_eventos() #aca llama a la fun seleccionar evento 
         elif opcion == "2":
             nombre = input("Ingrese el nombre del asistente: ")
             evento_id = int(input("Ingrese el ID del evento: "))
             
             asistente.agregar_asistente(nombre, evento_id, asiento)
         elif opcion == "3":
-            asiento.mostrar_asientos_disponibles()
+            asiento.mostrar_asientos_disponibles() #aca se llama a esta funcion para mostrar todos los asientos que estan disponible
         elif opcion == "4":
             conexion.cerrar()
             print("Saliendo del programa.")
