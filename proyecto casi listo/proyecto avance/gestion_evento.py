@@ -153,4 +153,4 @@ evento = Evento(nombre_bd, None, None, None, None, None, None)
 
 evento.crear_tabla()
 
-menu_evento(evento)
+

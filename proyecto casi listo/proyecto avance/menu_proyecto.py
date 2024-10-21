@@ -1,14 +1,19 @@
 import time
+from gestion_asiento import *
+from gestion_de_asistente import *
+from gestion_evento import *
+from gestion_salon import *
+from gestion_salon import *
+from gestion_tickets import *
 
 def menu_principal():
     bandera = True
 
     while bandera:
-        print("\tBienvenido a la cosita de eventos")
-        print("\nQué acción desea hacer ahora?")
+        print("\tBienvenido a OCASO EVENTOS")
+        print("\nQué acción desea hacer?")
         print("\t1.- Opciones de Evento")
-        print("\t2.- Cosa 2")
-        print("\t3.- Cosa 3")
+        print("\t2.- opciones de Asistente")
         print("\tIngrese Q para salir.\n")
 
         eleccion_usuario = input("> ")
@@ -16,11 +21,11 @@ def menu_principal():
         if eleccion_usuario == "1":
             print("Entrando al menú de eventos\n")
             time.sleep(1)
-            
+            menu_evento(evento)
         elif eleccion_usuario == "2":
-            print("coso 2\n")
-        elif eleccion_usuario == "3":
-            print("coso 3\n")
+            print("Entrando al menú de asistente\n")
+            time.sleep(1)
+            menu_asistente()
         elif eleccion_usuario == "q" or eleccion_usuario == "Q":
             print("salir\n")
             time.sleep(1)
