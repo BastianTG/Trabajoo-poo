@@ -1,0 +1,243 @@
+import sqlite3
+import time
+
+# Clase que hace la conexión a la base de datos con las operaciones CRUD.
+class ConexionGestionEvento:
+    def __init__(self, nombre_bd):
+        self.nombre_bd = nombre_bd
+        self.conexion = None
+
+    def conectar(self):
+        if self.conexion is None:
+            self.conexion = sqlite3.connect(self.nombre_bd)
+        return self.conexion
+
+    def cerrar_conexion(self):
+        if self.conexion:
+            self.conexion.close()
+            self.conexion = None
+
+    def existe_tabla(self, nombre_tabla):
+        conexion = self.conectar()
+        cursor = conexion.cursor()
+        cursor.execute('''
+            SELECT name FROM sqlite_master WHERE type='table' AND name=?
+        ''', (nombre_tabla,))
+        existe = cursor.fetchone() is not None
+        return existe
+
+    def crear_tabla(self, query):
+        conexion = self.conectar()
+        cursor = conexion.cursor()
+        cursor.execute(query)
+        conexion.commit()
+
+    def insertar(self, query, parametros):
+        conexion = self.conectar()
+        cursor = conexion.cursor()
+        cursor.execute(query, parametros)
+        conexion.commit()
+        return cursor.lastrowid
+
+    def leer(self, query, parametros=None):
+        conexion = self.conectar()
+        cursor = conexion.cursor()
+        if parametros:
+            cursor.execute(query, parametros)
+        else:
+            cursor.execute(query)
+        return cursor.fetchall()
+
+    def actualizar(self, query, parametros):
+        conexion = self.conectar()
+        cursor = conexion.cursor()
+        cursor.execute(query, parametros)
+        conexion.commit()
+
+    def eliminar(self, query, parametros):
+        conexion = self.conectar()
+        cursor = conexion.cursor()
+        cursor.execute(query, parametros)
+        conexion.commit()
+
+
+# Clase que maneja los salones pre-existentes a la base de datos.
+class Salon(ConexionGestionEvento):
+    def __init__(self, nombre_bd, salon_id, nombre, capacidad):
+        super().__init__(nombre_bd)
+        self.salon_id = salon_id
+        self.nombre = nombre
+        self.capacidad = capacidad
+
+    def obtener_salones(self):
+        return self.leer("SELECT id, nombre, capacidad FROM salones")
+
+    def crear_tabla_salones(self):
+        query = '''CREATE TABLE IF NOT EXISTS salones (
+                       id INTEGER PRIMARY KEY AUTOINCREMENT,
+                       nombre TEXT NOT NULL,
+                       capacidad INTEGER NOT NULL
+                   );'''
+        self.crear_tabla(query)
+
+    def insertar(self):
+        self.insertar('''INSERT INTO salones (nombre, capacidad)
+                     VALUES (?, ?)''', (self.nombre, self.capacidad))
+
+
+
+
+
+# Clase para manejar los eventos
+class Evento(ConexionGestionEvento):
+    def __init__(self, nombre_base_de_datos):
+        super().__init__(nombre_base_de_datos)
+
+    def crear_tablas(self):
+        self.crear_tabla('''
+            CREATE TABLE IF NOT EXISTS eventos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre TEXT NOT NULL,
+                fecha DATE NOT NULL,
+                hora_inicio TIME NOT NULL,
+                hora_termino TIME NOT NULL,
+                salon_id INTEGER NOT NULL,
+                FOREIGN KEY (salon_id) REFERENCES salones(id) ON DELETE CASCADE
+            );
+        ''')
+        self.crear_tabla('''
+            CREATE TABLE IF NOT EXISTS asientos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                numero_asiento INTEGER NOT NULL,
+                salon_id INTEGER NOT NULL,
+                evento_id INTEGER NOT NULL,
+                ocupado INTEGER DEFAULT 0,
+                FOREIGN KEY (salon_id) REFERENCES salones(id) ON DELETE CASCADE,
+                FOREIGN KEY (evento_id) REFERENCES eventos(id) ON DELETE CASCADE
+            );
+        ''')
+        self.crear_tabla('''
+            CREATE TABLE IF NOT EXISTS tickets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                evento_id INTEGER NOT NULL,
+                asiento_id INTEGER NOT NULL,
+                asignado INTEGER DEFAULT 0,
+                FOREIGN KEY (evento_id) REFERENCES eventos(id) ON DELETE CASCADE,
+                FOREIGN KEY (asiento_id) REFERENCES asientos(id) ON DELETE CASCADE
+            );
+        ''')
+
+    def registrar_asientos_y_tickets(self, evento_id, salon_id, capacidad):
+        query_asiento = "INSERT INTO asientos (numero_asiento, salon_id, evento_id, ocupado) VALUES (?, ?, ?, ?)"
+        query_ticket = "INSERT INTO tickets (evento_id, asiento_id, asignado) VALUES (?, ?, ?)"
+        for i in range(1, capacidad + 1):
+            asiento_id = self.insertar(query_asiento, (i, salon_id, evento_id, 0))
+            self.insertar(query_ticket, (evento_id, asiento_id, 0))
+
+
+# Función para agregar un evento
+def agregar_evento():
+    salon = Salon("Base de datos.db", None, None, None)
+    evento = Evento("Base de datos.db")
+
+    print("Salones disponibles:")
+    salones = salon.obtener_salones()
+    for s in salones:
+        print(f"ID: {s[0]}, Nombre: {s[1]}, Capacidad: {s[2]}")
+
+    try:
+        salon_id = int(input("Seleccione un salón por su ID: "))
+        fecha = input("Ingrese una fecha (DD/MM/AAAA): ")
+        dia, mes, año = fecha.split('/')
+        fecha = f"{año}-{mes.zfill(2)}-{dia.zfill(2)}"
+
+        hora_inicio = input("Ingrese la hora de inicio (HH:MM:SS): ")
+        hora_termino = input("Ingrese la hora de termino (HH:MM:SS): ")
+        nombre_evento = input("Nombre del evento: ")
+
+        if salon_id not in [s[0] for s in salones]:
+            print("Error: El ID del salón no es válido.")
+            return
+
+        query_evento = "INSERT INTO eventos (nombre, fecha, hora_inicio, hora_termino, salon_id) VALUES (?, ?, ?, ?, ?)"
+        evento_id = evento.insertar(query_evento, (nombre_evento, fecha, hora_inicio, hora_termino, salon_id))
+
+        capacidad = next(s[2] for s in salones if s[0] == salon_id)
+        evento.registrar_asientos_y_tickets(evento_id, salon_id, capacidad)
+
+        print("Evento, asientos y tickets agregados con éxito")
+
+    except ValueError:
+        print("Error en el formato de fecha o entrada incorrecta.")
+
+
+# Función de creación de salones
+def creacion_salones(salon_1, salon_2, salon_3):
+    if not salon_1.existe_tabla('salones'):
+        salon_1.crear_tabla_salones()
+        salon_1.insertar()
+        salon_2.insertar()
+        salon_3.insertar()
+        print("Salones cargados con éxito.")
+    else:
+        print("La tabla 'salones' ya está creada.")
+
+
+# Funciones de menús
+def menu_eventos():
+    while True:
+        print("\n--- OPCIONES DE EVENTO ---")
+        print("1. Agregar Evento")
+        print("2. Eliminar Evento")
+        print("Q. Volver al Menú Principal")
+
+        opcion = input("> ").strip().lower()
+
+        if opcion == "1":
+            agregar_evento()
+        elif opcion == "2":
+            print("Eliminar Evento (Función no implementada todavía)")
+        elif opcion == "q":
+            break
+        else:
+            print("Opción no válida. Inténtelo de nuevo.")
+
+
+def menu_principal():
+    bandera = True
+
+    while bandera:
+        print("\tBienvenido a la gestión de eventos")
+        print("\n¿Qué acción desea realizar?")
+        print("\t1.- OPCIONES DE EVENTO")
+        print("\t2.- OPCIONES DE ASISTENTE")
+        print("\t3.- VALIDAR TICKET")
+        print("\tIngrese Q para salir.\n")
+
+        eleccion_usuario = input("> ").strip().lower()
+
+        if eleccion_usuario == "1":
+            menu_eventos()
+        elif eleccion_usuario == "2":
+            print("Opciones de asistente (Función no implementada todavía)")
+        elif eleccion_usuario == "3":
+            print("Validar Ticket (Función no implementada todavía)")
+        elif eleccion_usuario == "q":
+            print("Saliendo del programa...\n")
+            time.sleep(1)
+            bandera = False
+        else:
+            print("El valor ingresado es incorrecto")
+            print("Volviendo al menú principal\n")
+            time.sleep(1)
+
+
+# Ejecución del programa principal
+salon_1 = Salon("Base de datos.db", 1, "Auditorio Central", 100)
+salon_2 = Salon("Base de datos.db", 2, "Sala de Conferencias", 50)
+salon_3 = Salon("Base de datos.db", 3, "Teatro Principal", 200)
+
+creacion_salones(salon_1, salon_2, salon_3)
+evento = Evento("Base de datos.db")
+evento.crear_tablas()
+menu_principal()
