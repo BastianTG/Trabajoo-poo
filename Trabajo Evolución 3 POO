@@ -1,0 +1,127 @@
+import requests
+import json
+
+
+class APIClient:
+    def __init__(self, base_url):
+        self.base_url = base_url
+
+    def get_data(self, endpoint):
+        url = f"{self.base_url}/{endpoint}"
+        print(f"Consultando: {url}")
+        try:
+            response = requests.get(url)
+            response.raise_for_status()  # Verifica si hubo un error en la solicitud
+            data = response.json()
+
+            while True:
+                try:
+                    num_datos = int(input("Ingrese el número de datos que desea ver: "))
+                    if num_datos > 0:
+                        break
+                    else:
+                        print("Por favor, ingrese un número mayor que 0.")
+                except ValueError:
+                    print("Entrada inválida. Ingrese un número entero.")
+
+            print("Datos obtenidos con GET:")
+            print(json.dumps(data[:num_datos], indent=4))
+            return data
+        except requests.RequestException as e:
+            print(f"Error al obtener datos: {e}")
+            return None
+
+    def post_data(self, endpoint, data):
+        url = f"{self.base_url}/{endpoint}"
+        try:
+            response = requests.post(url, json=data)
+            response.raise_for_status()  # Verifica si hubo un error en la solicitud
+            print("Datos enviados con POST:")
+            print(json.dumps(response.json(), indent=4))
+            return response.json()
+        except requests.RequestException as e:
+            print(f"Error al enviar datos: {e}")
+            return None
+
+    def delete_data(self, endpoint, data_id):
+        url = f"{self.base_url}/{endpoint}/{data_id}"
+        try:
+            response = requests.delete(url)
+            response.raise_for_status()
+            print(f"Datos eliminados con la id {data_id}:")
+            print(json.dumps(response.json(), indent=4))
+            return response.json()
+        except requests.RequestException as e:
+            print(f"Error al eliminar datos: {e}")
+            return None
+
+    def update_data(self, endpoint, data_id, data):
+        url = f"{self.base_url}/{endpoint}/{data_id}"
+        try:
+            response = requests.put(url, json=data)
+            response.raise_for_status()
+            print(f"Datos actualizados de id: {data_id}:")
+            print(json.dumps(response.json(), indent=4))
+            return response.json()
+        except requests.RequestException as e:
+            print(f"Error al actualizar datos: {e}")
+            return None
+
+
+def solicitar_datos_album():
+    print("\n--- Crear un nuevo album ---")
+    title = input("Ingrese el título del álbum: ")
+    while True:
+        try:
+            user_id = int(input("Ingrese el ID del usuario: "))
+            break
+        except ValueError:
+            print("Por favor, ingrese un número entero para el ID.")
+    return {"title": title, "userId": user_id}
+
+
+def menu():
+    api_url = "https://jsonplaceholder.typicode.com"
+    client = APIClient(api_url)
+
+    while True:
+        print("\n--- Menú de Opciones ---")
+        print("1. Ver albums")
+        print("2. Crear un nuevo album")
+        print("3. Actualizar un album")
+        print("4. Borrar album")
+        print("5. Salir")
+
+        opcion = input("Seleccione una opción (1, 2, 3, 4 o 5): ")
+
+        if opcion == "1":
+            client.get_data("albums")
+        elif opcion == "2":
+            nuevo_album = solicitar_datos_album()
+            client.post_data("albums", nuevo_album)
+        elif opcion == "3":
+            while True:
+                try:
+                    id_actualizar = int(input("Ingrese el ID del álbum a actualizar: "))
+                    break
+                except ValueError:
+                    print("Por favor, ingrese un número válido.")
+            nuevo_album = solicitar_datos_album()
+            client.update_data("albums", id_actualizar, nuevo_album)
+        elif opcion == "4":
+            while True:
+                try:
+                    id_borrar = int(input("Ingrese el ID del álbum a borrar: "))
+                    break
+                except ValueError:
+                    print("Por favor, ingrese un número válido.")
+            client.delete_data("albums", id_borrar)
+        elif opcion == "5":
+            print("Saliendo del programa. ¡Hasta pronto!")
+            break
+        else:
+            print("Opción no válida. Por favor, intente de nuevo.")
+
+
+if __name__ == "__main__":
+    menu()
