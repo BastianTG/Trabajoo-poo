@@ -2,21 +2,21 @@ import requests
 import json
 
 
-class APIClient:
+class APIClient:                                            #Clase API que contiene el CRUD
     def __init__(self, base_url):
         self.base_url = base_url
 
-    def get_data(self, endpoint):
+    def get_data(self, endpoint):                           #MEtodo Get para leer los datos de la api
         url = f"{self.base_url}/{endpoint}"
-        print(f"Consultando: {url}")
+        print(f"Consultando: {url}")                        
         try:
             response = requests.get(url)
-            response.raise_for_status()  # Verifica si hubo un error en la solicitud
+            response.raise_for_status()                     #Verifica si hubo un error en la solicitud
             data = response.json()
 
             while True:
                 try:
-                    num_datos = int(input("Ingrese el número de datos que desea ver: "))
+                    num_datos = int(input("Ingrese el número de datos que desea ver: "))   #variable que guarda los datos a mostrar
                     if num_datos > 0:
                         break
                     else:
@@ -25,25 +25,25 @@ class APIClient:
                     print("Entrada inválida. Ingrese un número entero.")
 
             print("Datos obtenidos con GET:")
-            print(json.dumps(data[:num_datos], indent=4))
+            print(json.dumps(data[:num_datos], indent=4))               #Se imprimen los datos de la api segun el numero que se ingreso
             return data
-        except requests.RequestException as e:
+        except requests.RequestException as e:            #Mensaje de error con el codigo del error si la verificacion falla
             print(f"Error al obtener datos: {e}")
             return None
 
-    def post_data(self, endpoint, data):
+    def post_data(self, endpoint, data):                    #Metodo POST para Agregar dato a la Api
         url = f"{self.base_url}/{endpoint}"
         try:
             response = requests.post(url, json=data)
-            response.raise_for_status()  # Verifica si hubo un error en la solicitud
+            response.raise_for_status()                      # Verifica si hubo un error en la solicitud
             print("Datos enviados con POST:")
             print(json.dumps(response.json(), indent=4))
             return response.json()
-        except requests.RequestException as e:
+        except requests.RequestException as e:                #Mensaje de error con el codigo del error si la verificacion falla
             print(f"Error al enviar datos: {e}")
             return None
 
-    def delete_data(self, endpoint, data_id):
+    def delete_data(self, endpoint, data_id):                #Metodo DELETE para borrar datos de la API
         url = f"{self.base_url}/{endpoint}/{data_id}"
         try:
             response = requests.delete(url)
@@ -55,7 +55,7 @@ class APIClient:
             print(f"Error al eliminar datos: {e}")
             return None
 
-    def update_data(self, endpoint, data_id, data):
+    def update_data(self, endpoint, data_id, data):                #Metodo UPDATE para actualidar datos de la api
         url = f"{self.base_url}/{endpoint}/{data_id}"
         try:
             response = requests.put(url, json=data)
@@ -68,7 +68,7 @@ class APIClient:
             return None
 
 
-def solicitar_datos_album():
+def solicitar_datos_album():                                        #Funcion con la que ingresar los datos del edpoint "ALbum"
     print("\n--- Crear un nuevo album ---")
     title = input("Ingrese el título del álbum: ")
     while True:
@@ -80,8 +80,8 @@ def solicitar_datos_album():
     return {"title": title, "userId": user_id}
 
 
-def menu():
-    api_url = "https://jsonplaceholder.typicode.com"
+def menu():                                                        #Funcion con el menu de usuario
+    api_url = "https://jsonplaceholder.typicode.com"               #URL de la pagina que contien la API
     client = APIClient(api_url)
 
     while True:
