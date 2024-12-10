@@ -1,0 +1,192 @@
+import tkinter as tk
+from tkinter import ttk, messagebox, simpledialog
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+class GestionAsignaturasApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Gestión de Asignaturas")
+
+        # Datos
+        self.matriz_criterios = []
+        self.matriz_porcentajes = []
+        self.matriz_notas = []
+        self.nombres_asignaturas = []
+
+        # Crear interfaz
+        self.create_interface()
+
+    def create_interface(self):
+        # Botones principales
+        frame_buttons = tk.Frame(self.root, pady=10)
+        frame_buttons.pack()
+
+        tk.Button(frame_buttons, text="Configurar desde cero", command=self.configurar_desde_cero, width=25).grid(row=0, column=0, padx=5, pady=5)
+        tk.Button(frame_buttons, text="Agregar Asignatura", command=self.agregar_asignatura, width=25).grid(row=0, column=1, padx=5, pady=5)
+        tk.Button(frame_buttons, text="Cambiar Porcentajes", command=self.cambiar_porcentajes, width=25).grid(row=1, column=0, padx=5, pady=5)
+        tk.Button(frame_buttons, text="Completar Notas", command=self.completar_notas, width=25).grid(row=1, column=1, padx=5, pady=5)
+        tk.Button(frame_buttons, text="Mostrar tabla Notas", command=self.mostrar_matrices, width=25).grid(row=2, column=0, padx=5, pady=5)
+        tk.Button(frame_buttons, text="Gráficos", command=self.mostrar_graficos, width=25).grid(row=2, column=1, padx=5, pady=5)
+
+    def configurar_desde_cero(self):
+        self.matriz_criterios.clear()
+        self.matriz_porcentajes.clear()
+        self.matriz_notas.clear()
+        self.nombres_asignaturas.clear()
+
+        num_asignaturas = simpledialog.askinteger("Configurar desde cero", "Número de asignaturas:")
+        if num_asignaturas is None or num_asignaturas <= 0:
+            messagebox.showwarning("Error", "Debe ingresar un número válido de asignaturas.")
+            return
+
+        for _ in range(num_asignaturas):
+            self.agregar_asignatura()
+
+    def agregar_asignatura(self):
+        nombre = simpledialog.askstring("Nueva Asignatura", "Nombre de la asignatura:")
+        if not nombre:
+            return
+        self.nombres_asignaturas.append(nombre)
+
+        # Ingresar criterios
+        while True:
+            try:
+                nota_eximicion = float(simpledialog.askstring("Nota de Eximición", f"Nota de eximición para {nombre} (entre 1 y 7):"))
+                nota_aprobacion = float(simpledialog.askstring("Nota de Aprobación", f"Nota de aprobación para {nombre} (entre 1 y 7):"))
+                if 1 <= nota_eximicion <= 7 and 1 <= nota_aprobacion <= 7:
+                    self.matriz_criterios.append([nota_eximicion, nota_aprobacion])
+                    break
+                else:
+                    messagebox.showerror("Error", "Ambas notas deben estar entre 1 y 7.")
+            except (ValueError, TypeError):
+                messagebox.showerror("Error", "Ingrese valores válidos.")
+
+        # Ingresar porcentajes
+        while True:
+            porcentajes = []
+            suma = 0
+            for i in range(4):
+                try:
+                    porcentaje = float(simpledialog.askstring("Porcentaje", f"Porcentaje para la nota {i + 1} (en %):"))
+                    if 0 <= porcentaje <= 100:
+                        porcentajes.append(porcentaje)
+                        suma += porcentaje
+                    else:
+                        raise ValueError
+                except (ValueError, TypeError):
+                    messagebox.showerror("Error", "Ingrese un porcentaje válido.")
+                    break
+            if suma == 100:
+                self.matriz_porcentajes.append(porcentajes)
+                break
+            else:
+                messagebox.showerror("Error", f"Los porcentajes deben sumar exactamente 100%. (Actual: {suma})")
+
+        # Ingresar notas iniciales
+        notas = [None for _ in range(4)]
+        self.matriz_notas.append(notas)
+        messagebox.showinfo("Asignatura Agregada", f"Asignaura '{nombre}' agregada exitosamente.")
+
+    def cambiar_porcentajes(self):
+        if not self.nombres_asignaturas:
+            messagebox.showwarning("Advertencia", "No hay asignaturas disponibles.")
+            return
+
+        seleccion = self.seleccionar_asignatura("Cambiar Porcentajes")
+        if seleccion is None:
+            return
+
+        while True:
+            porcentajes = []
+            suma = 0
+            for i in range(4):
+                try:
+                    porcentaje = float(simpledialog.askstring("Porcentaje", f"Nuevo porcentaje para la nota {i + 1} (en %):"))
+                    if 0 <= porcentaje <= 100:
+                        porcentajes.append(porcentaje)
+                        suma += porcentaje
+                    else:
+                        raise ValueError
+                except (ValueError, TypeError):
+                    messagebox.showerror("Error", "Ingrese un porcentaje válido.")
+                    break
+            if suma == 100:
+                self.matriz_porcentajes[seleccion] = porcentajes
+                messagebox.showinfo("Porcentajes Actualizados", "Los porcentajes han sido actualizados.")
+                break
+            else:
+                messagebox.showerror("Error", f"Los porcentajes deben sumar exactamente 100%. (Actual: {suma})")
+
+    def completar_notas(self):
+        if not self.nombres_asignaturas:
+            messagebox.showwarning("Advertencia", "No hay asignaturas disponibles.")
+            return
+
+        seleccion = self.seleccionar_asignatura("Completar Notas")
+        if seleccion is None:
+            return
+
+        asignatura = self.matriz_notas[seleccion]
+        for i, nota in enumerate(asignatura):
+            if nota is None:
+                while True:
+                    try:
+                        nueva_nota = float(simpledialog.askstring("Completar Nota", f"Ingrese la nota para el espacio {i + 1} (entre 1 y 7):"))
+                        if 1 <= nueva_nota <= 7:
+                            asignatura[i] = nueva_nota
+                            break
+                        else:
+                            raise ValueError
+                    except (ValueError, TypeError):
+                        messagebox.showerror("Error", "Ingrese un valor válido para la nota.")
+
+    def mostrar_matrices(self):
+        if not self.nombres_asignaturas:
+            messagebox.showwarning("Advertencia", "No hay datos disponibles.")
+            return
+
+        ventana_matrices = tk.Toplevel(self.root)
+        ventana_matrices.title("Matrices")
+
+        tree = ttk.Treeview(ventana_matrices, columns=("Criterios", "Notas", "Porcentajes"), show="headings")
+        tree.heading("Criterios", text="Criterios")
+        tree.heading("Notas", text="Notas")
+        tree.heading("Porcentajes", text="Porcentajes")
+        tree.pack(fill=tk.BOTH, expand=True)
+
+        for nombre, criterios, notas, porcentajes in zip(self.nombres_asignaturas, self.matriz_criterios, self.matriz_notas, self.matriz_porcentajes):
+            tree.insert("", "end", values=(f"{nombre}: {criterios}", notas, porcentajes))
+
+    def mostrar_graficos(self):
+        if not self.nombres_asignaturas or not self.matriz_notas:
+            messagebox.showwarning("Advertencia", "No hay datos para mostrar gráficos.")
+            return
+
+        promedios = [
+            np.nanmean([n for n in notas if n is not None])
+            for notas in self.matriz_notas
+        ]
+
+        plt.figure(figsize=(10, 6))
+        plt.bar(self.nombres_asignaturas, promedios, color="skyblue")
+        plt.title("Promedio de Notas por Asignatura")
+        plt.ylabel("Promedio")
+        plt.xlabel("Asignaturas")
+        plt.ylim(0, 7)
+        plt.grid(axis="y", linestyle="--", alpha=0.7)
+        plt.show()
+
+    def seleccionar_asignatura(self, titulo):
+        opciones = [f"{i + 1}. {nombre}" for i, nombre in enumerate(self.nombres_asignaturas)]
+        seleccion = simpledialog.askinteger(titulo, f"Seleccione una asignatura:\n" + "\n".join(opciones))
+        if seleccion is None or not (1 <= seleccion <= len(self.nombres_asignaturas)):
+            return None
+        return seleccion - 1
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = GestionAsignaturasApp(root)
+    root.mainloop()
